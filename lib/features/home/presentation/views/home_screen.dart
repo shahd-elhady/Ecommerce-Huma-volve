@@ -1,81 +1,204 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/services/home_service.dart';
+
+import '../../../../core/dummy_data.dart';
+import '../../../../core/theme.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
+import '../widgets/category_chip.dart';
+import '../widgets/product_card.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedCategoryIndex = 0;
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => HomeCubit(HomeService())..getProducts(),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Home Page'),
-          centerTitle: true,
-        ),
-        body: BlocBuilder<HomeCubit, HomeState>(
-          builder: (context, state) {
-            if (state is HomeLoadingState) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is HomeErrorState) {
-              return Center(child: Text(state.errorMessage));
-            } else if (state is HomeSuccessState) {
-              return GridView.builder(
-                padding: const EdgeInsets.all(12),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.7,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                ),
-                itemCount: state.products.length,
-                itemBuilder: (context, index) {
-                  final product = state.products[index];
-                  return Card(
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                            child: Image.network(
-                              product.images.isNotEmpty ? product.images[0] : '',
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
-                            ),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withValues(alpha: 0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.menu,
+                            color: AppTheme.primary,
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            product.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundImage: NetworkImage(
+                            dummyUser.profilePictureUrl,
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Text(
-                            '\$${product.price}',
-                            style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
                       ],
                     ),
+                    const SizedBox(height: 32),
+                    Text(
+                      'Explore',
+                      style: Theme.of(context)
+                          .textTheme
+                          .displayLarge
+                          ?.copyWith(fontSize: 36),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Best trendy collection!',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(fontSize: 18),
+                    ),
+                    const SizedBox(height: 32),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withValues(alpha: 0.05),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Search clothes...',
+                          hintStyle: TextStyle(color: Colors.grey.shade400),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: Colors.grey,
+                          ),
+                          suffixIcon: Container(
+                            margin: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primary,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.tune,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      height: 44,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: dummyCategories.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(width: 12),
+                        itemBuilder: (context, index) {
+                          return CategoryChip(
+                            label: dummyCategories[index],
+                            isSelected: _selectedCategoryIndex == index,
+                            onTap: () {
+                              setState(() {
+                                _selectedCategoryIndex = index;
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            BlocBuilder<HomeCubit, HomeState>(
+              builder: (context, state) {
+                if (state is HomeLoadingState || state is HomeInitialState) {
+                  return const SliverFillRemaining(
+                    child: Center(child: CircularProgressIndicator()),
                   );
-                },
-              );
-            }
-            return const SizedBox();
-          },
+                }
+
+                if (state is HomeErrorState) {
+                  return SliverFillRemaining(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              state.errorMessage,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: () =>
+                                  context.read<HomeCubit>().getProducts(),
+                              child: const Text('إعادة المحاولة'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                final products = (state as HomeSuccessState).products;
+                if (products.isEmpty) {
+                  return const SliverFillRemaining(
+                    child: Center(child: Text('لا توجد منتجات')),
+                  );
+                }
+
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  sliver: SliverGrid(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.7,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => ProductCard(product: products[index]),
+                      childCount: products.length,
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          ],
         ),
       ),
     );

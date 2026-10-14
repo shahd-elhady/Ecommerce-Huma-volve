@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../core/dummy_data.dart';
 import '../../../core/theme.dart';
+import '../../auth/presentation/cubit/auth_cubit.dart';
+import '../../auth/presentation/views/login_screen.dart';
 import '../widgets/profile_menu_item.dart';
-import '../../auth/login/screens/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -99,12 +102,17 @@ class ProfileScreen extends StatelessWidget {
                     title: 'Logout',
                     isDestructive: true,
                     onTap: () {
+                      context.read<AuthCubit>().reset();
                       Navigator.pushReplacement(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
-                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                            return FadeTransition(opacity: animation, child: child);
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const LoginScreen(),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                            return FadeTransition(
+                                opacity: animation, child: child);
                           },
                         ),
                       );

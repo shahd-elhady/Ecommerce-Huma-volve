@@ -1,52 +1,57 @@
-// import 'dart:convert';
-//
-// class ApiClient {
-//   Dio dio;
-//   ApiClient():dio=Dio(baseOptions(base64Url:"https://api.escuelajs.co/api/v1/"))
-//
-//
-//
-//   baseOptions({required String base64Url}) {}}
-// //https://api.escuelajs.co/api/v1/auth/login
 import 'package:dio/dio.dart';
-import '../../features/auth/sign_up/user_model.dart';
-import '../../../features/auth/sign_up/user_model.dart';
-class AuthService {
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'https://api.escuelajs.co/api/v1/'));
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
+class ApiClient {
+  ApiClient._();
 
-  Future< UserModel?> login(String email, String password) async {
-    try {
-      final response = await _dio.post('/login', data: {
-        'email': email,
-        'password': password,
-      });
+  static const String baseUrl = 'https://api.escuelajs.co/api/v1/';
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return  UserModel.fromJson(response.data);
-      }
-    } catch (e) {
-      print('Login Error: $e');
-    }
-    return null;
+  static Dio create() {
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 20),
+        receiveTimeout: const Duration(seconds: 20),
+        sendTimeout: const Duration(seconds: 20),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
+
+    dio.interceptors.add(
+      PrettyDioLogger(
+        requestHeader: true,
+        requestBody: true,
+        responseBody: true,
+        compact: true,
+      ),
+    );
+
+    return dio;
   }
 
-
-  Future<UserModel?> register(String name, String email, String password) async {
-    try {
-      final response = await _dio.post('users/', data: {
-        'name': name,
-        'email': email,
-        'password': password,
-        'avatar': 'https://picsum.photos/800',
-      });
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return UserModel.fromJson(response.data);
+  static String mapError(Object error) {
+    if (error is DioException) {
+      if (error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.receiveTimeout ||
+          error.type == DioExceptionType.sendTimeout) {
+        return 'انتهت مهلة الاتصال، حاول مرة أخرى';
       }
-    } catch (e) {
-      print('Register Error: $e');
+      if (error.type == DioExceptionType.connectionError) {
+        return 'لا يوجد اتصال بالإنترنت';
+      }
+
+      final data = error.response?.data;
+      if (data is Map && data['message'] != null) {
+        return data['message'].toString();
+      }
+      if (data is String && data.isNotEmpty) {
+        return data;
+      }
+      return error.message ?? 'حدث خطأ أثناء الاتصال بالسيرفر';
     }
-    return null;
+    return error.toString();
   }
 }
