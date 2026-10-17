@@ -7,4 +7,5 @@ abstract class HomeRepository {
     int offset = 0,
     int limit = 10,
   });
+  Future<Either<String, ProductEntity>> getProductById(int id);
 }

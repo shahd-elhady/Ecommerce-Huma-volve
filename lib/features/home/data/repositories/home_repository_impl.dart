@@ -25,4 +25,14 @@ class HomeRepositoryImpl implements HomeRepository {
       return Left(ApiClient.mapError(e));
     }
   }
+
+  @override
+  Future<Either<String, ProductEntity>> getProductById(int id) async {
+    try {
+      final product = await remoteDataSource.fetchProductById(id);
+      return Right(product);
+    } catch (e) {
+      return Left(ApiClient.mapError(e));
+    }
+  }
 }

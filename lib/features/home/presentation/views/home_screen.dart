@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../../../core/dummy_data.dart';
 import '../../../../core/theme.dart';
 import '../cubit/home_cubit.dart';
@@ -179,7 +178,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Center(child: CircularProgressIndicator()),
                     );
                   }
-
                   if (state is HomeErrorState) {
                     return SliverFillRemaining(
                       child: Center(
@@ -196,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ElevatedButton(
                                 onPressed: () =>
                                     context.read<HomeCubit>().getProducts(),
-                                child: const Text('إعادة المحاولة'),
+                                child: const Text('Retry'),
                               ),
                             ],
                           ),
@@ -204,15 +202,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     );
                   }
-
                   final successState = state as HomeSuccessState;
                   final products = successState.products;
                   if (products.isEmpty) {
                     return const SliverFillRemaining(
-                      child: Center(child: Text('لا توجد منتجات')),
+                      child: Center(child: Text('No products found')),
                     );
                   }
-
                   return SliverMainAxisGroup(
                     slivers: [
                       SliverPadding(
@@ -262,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         .read<HomeCubit>()
                                         .loadMoreProducts(),
                                     icon: const Icon(Icons.refresh, size: 18),
-                                    label: const Text('إعادة المحاولة'),
+                                    label: const Text('Retry'),
                                   ),
                                 ],
                               ),
@@ -275,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 24.0),
                             child: Center(
                               child: Text(
-                                'تم عرض جميع المنتجات',
+                                'All products loaded',
                                 style: TextStyle(
                                   color: Colors.grey.shade500,
                                   fontSize: 14,

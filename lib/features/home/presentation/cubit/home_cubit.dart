@@ -1,11 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../domain/usecases/get_products_usecase.dart';
 import 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
   final GetProductsUseCase getProductsUseCase;
-
   static const int pageSize = 10;
   int _offset = 0;
   bool _isFetchingMore = false;
@@ -17,7 +15,6 @@ class HomeCubit extends Cubit<HomeState> {
       emit(HomeLoadingState());
     }
     _offset = 0;
-
     final result = await getProductsUseCase(offset: 0, limit: pageSize);
     result.fold(
       (error) => emit(HomeErrorState(error)),
@@ -35,7 +32,6 @@ class HomeCubit extends Cubit<HomeState> {
 
   Future<void> loadMoreProducts() async {
     if (_isFetchingMore) return;
-
     final currentState = state;
     if (currentState is! HomeSuccessState) return;
     if (currentState.hasReachedMax || currentState.isLoadingMore) return;
@@ -44,24 +40,13 @@ class HomeCubit extends Cubit<HomeState> {
     emit(currentState.copyWith(isLoadingMore: true, paginationError: null));
 
     final result = await getProductsUseCase(offset: _offset, limit: pageSize);
-
     result.fold(
       (error) {
-        emit(
-          currentState.copyWith(
-            isLoadingMore: false,
-            paginationError: error,
-          ),
-        );
+        emit(currentState.copyWith(isLoadingMore: false, paginationError: error));
       },
       (newProducts) {
         if (newProducts.isEmpty) {
-          emit(
-            currentState.copyWith(
-              isLoadingMore: false,
-              hasReachedMax: true,
-            ),
-          );
+          emit(currentState.copyWith(isLoadingMore: false, hasReachedMax: true));
         } else {
           _offset += newProducts.length;
           emit(
@@ -74,7 +59,6 @@ class HomeCubit extends Cubit<HomeState> {
         }
       },
     );
-
     _isFetchingMore = false;
   }
 }
