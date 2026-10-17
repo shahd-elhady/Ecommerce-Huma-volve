@@ -11,9 +11,15 @@ class HomeRepositoryImpl implements HomeRepository {
   HomeRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<Either<String, List<ProductEntity>>> getProducts() async {
+  Future<Either<String, List<ProductEntity>>> getProducts({
+    int offset = 0,
+    int limit = 10,
+  }) async {
     try {
-      final products = await remoteDataSource.fetchProducts();
+      final products = await remoteDataSource.fetchProducts(
+        offset: offset,
+        limit: limit,
+      );
       return Right(products);
     } catch (e) {
       return Left(ApiClient.mapError(e));

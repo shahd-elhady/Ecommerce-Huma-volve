@@ -8,5 +8,7 @@ void main() {
     AppInjector.init();
     await tester.pumpWidget(const MyApp());
     expect(find.text('Huma-volve'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pumpAndSettle();
   });
 }
